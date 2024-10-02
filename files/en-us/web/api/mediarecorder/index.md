@@ -74,11 +74,13 @@ if (navigator.mediaDevices) {
 
   const constraints = { audio: true };
   let chunks = [];
+  let mimeType;
 
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
+      const options = { mimeType: 'audio/ogg; codecs=opus' };
+      const mediaRecorder = new MediaRecorder(stream, options);
 
       record.onclick = () => {
         mediaRecorder.start();
@@ -118,7 +120,7 @@ if (navigator.mediaDevices) {
         mainContainer.appendChild(clipContainer);
 
         audio.controls = true;
-        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+        const blob = new Blob(chunks, { type: mimeType });
         chunks = [];
         const audioURL = URL.createObjectURL(blob);
         audio.src = audioURL;
@@ -132,6 +134,8 @@ if (navigator.mediaDevices) {
 
       mediaRecorder.ondataavailable = (e) => {
         chunks.push(e.data);
+         if (!mimeType)
+           mimeType = e.data.type;
       };
     })
     .catch((err) => {
